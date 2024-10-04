@@ -1,0 +1,266 @@
+openapi: 3.0.1
+info:
+  title: Swagger Gestión de Cuentas
+  version: 1.0.0
+  description: |-
+    Esto es un sistema para la gestión de cuentas bancarias asociadas a clientes.
+servers:
+  - url: http://localhost:8081
+    description: Servidor Local
+tags:
+  - name: cuentas
+    description: Operaciones acerca de Cuentas (Crear, Leer, Actualizar y Eliminar)
+paths:
+  /cuentas:
+    post:
+      tags:
+        - cuentas
+      summary: Crear una cuenta para un cliente
+      description: Crear una cuenta para un cliente en el sistema bancario
+      operationId: agregarCuenta
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CuentaRequest'
+      responses:
+        '200':
+          description: Cuenta creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CuentaResponse'
+        '400':
+          description: Solicitud inválida
+        '500':
+          description: Internal Server error
+    get:
+      tags:
+        - cuentas
+      summary: Listar todas las cuentas bancarias
+      description: Listar todas las cuentas bancarias del sistema bancario
+      operationId: listarCuentas
+      responses:
+        '200':
+          description: Lista de cuentas bancarias
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CuentaResponse'
+
+  /cuentas/{id}:
+    get:
+      tags:
+        - cuentas
+      summary: Obtener detalles de una cuenta por su ID
+      description: Obtener detalles de un cuenta
+      operationId: getCuentaPorId
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID de la Cuenta
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Detalles de la cuenta
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CuentaResponse'
+        '400':
+          description: ID inválido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    format: date-time
+                  status:
+                    type: integer
+                    example: 400
+                  error:
+                    type: string
+                    example: "Bad Request"
+                  message:
+                    type: string
+                    example: "Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"sdfsdfd\""
+                  path:
+                    type: string
+                    example: "/clientes/sdfsdfd"
+        '500':
+          description: Cliente no encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    format: date-time
+                  status:
+                    type: integer
+                    example: 404
+                  error:
+                    type: string
+                    example: "Not Found"
+                  message:
+                    type: string
+                    example: "Cliente no encontrado con id: 302124"
+                  path:
+                    type: string
+                    example: "/clientes/302124"
+    delete:
+      tags:
+        - cuentas
+      summary: Eliminar una cuenta bancaria
+      description: Eliminar una cuenta bancaria
+      operationId: eliminarCuenta
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID de la cuenta a eliminar
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Cuenta eliminada exitosamente
+        '500':
+          description: Cuenta no encontrada
+
+  /cuentas/{cuentaId}/depositar:
+    put:
+      tags:
+        - cuentas
+      summary: Realizar un depósito en una cuenta bancaria
+      description: Realizar un depósito en una cuenta bancaria
+      operationId: realizarDepositoCuenta
+      parameters:
+        - name: cuentaId
+          in: path
+          required: true
+          description: ID de la cuenta en la que se realizará el depósito
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                monto:
+                  type: number
+                  format: double
+                  description: Monto a depositar
+              required:
+                - monto
+      responses:
+        '200':
+          description: Depósito realizado exitosamente
+        '500':
+          description: Solicitud inválida
+
+  /cuentas/{cuentaId}/retirar:
+    put:
+      tags:
+        - cuentas
+      summary: Realizar un retiro de una cuenta bancaria
+      description: Realizar un retiro en una cuenta bancaria
+      operationId: realizarRetiroCuenta
+      parameters:
+        - name: cuentaId
+          in: path
+          required: true
+          description: ID de la cuenta de la que se realizará el retiro
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                monto:
+                  type: number
+                  format: double
+                  description: Monto a retirar
+              required:
+                - monto
+      responses:
+        '200':
+          description: Sobregiro
+        '500':
+          description: Cliente no encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    format: date-time
+                  status:
+                    type: integer
+                    example: 404
+                  error:
+                    type: string
+                    example: "Internal Server Error"
+                  message:
+                    type: string
+                    example: "Las cuentas corrientes no pueden tener un sobregiro mayor a -500."
+                  path:
+                    type: string
+                    example: "/clientes/302124"
+
+
+
+components:
+  schemas:
+    CuentaRequest:
+      type: object
+      properties:
+        clienteId:
+          type: string
+          description: El ID del cliente propietario de la cuenta
+        tipoCuenta:
+          type: string
+          enum: [AHORROS, CORRIENTE]
+          description: Tipo de cuenta (AHORROS o CORRIENTE)
+        saldo:
+          type: number
+          format: double
+          description: Saldo de la cuenta
+      required:
+        - clienteId
+        - tipoCuenta
+        - saldo
+
+    CuentaResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identificador único de la cuenta
+        numeroCuenta:
+          type: string
+          description: Número de cuenta generado automáticamente
+        saldo:
+          type: number
+          format: double
+          description: Saldo de la cuenta
+        tipoCuenta:
+          type: string
+          enum: [AHORROS, CORRIENTE]
+          description: Tipo de cuenta
+        clienteId:
+          type: string
+          description: El ID del cliente propietario de la cuenta
