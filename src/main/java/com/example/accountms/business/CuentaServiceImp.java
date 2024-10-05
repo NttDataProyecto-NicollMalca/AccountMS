@@ -30,15 +30,12 @@ public class CuentaServiceImp implements CuentaService {
 
     @Override
     public CuentaResponse agregarCuenta(CuentaRequest cuentaRequest) {
-        // Validar que el cliente exista
         validarClienteExiste(cuentaRequest.getClienteId());
 
-        // Validar que el saldo inicial no sea 0
         if (cuentaRequest.getSaldo() == 0) {
             throw new IllegalArgumentException("El saldo inicial no puede ser 0.");
         }
 
-        // Guardar la cuenta si todas las validaciones son correctas
         return cuentaMapper.getCuentaResponseofCuenta(
                 cuentaRepository.save(cuentaMapper.getCuentaofCuentaRequest(cuentaRequest)));
     }
@@ -49,12 +46,10 @@ public class CuentaServiceImp implements CuentaService {
         Cuenta cuenta = cuentaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Cuenta no encontrada con el id: " + id));
 
-        // Verificar si la cuenta tiene saldo mayor a 0
         if (cuenta.getSaldo() > 0) {
             throw new IllegalArgumentException("No se puede eliminar una cuenta con saldo mayor a 0.");
         }
 
-        // Eliminar la cuenta si no tiene saldo
         cuentaRepository.delete(cuenta);
         return ResponseEntity.noContent().build();
     }
