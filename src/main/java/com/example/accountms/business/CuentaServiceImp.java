@@ -38,13 +38,7 @@ public class CuentaServiceImp implements CuentaService {
     public CuentaResponse agregarCuenta(CuentaRequest cuentaRequest) {
         validarClienteExiste(cuentaRequest.getClienteId());
 
-<<<<<<< HEAD
         cuentaValidator.validarSaldoInicial(cuentaRequest.getSaldo());
-=======
-        if (cuentaRequest.getSaldo() == 0) {
-            throw new IllegalArgumentException("El saldo inicial no puede ser 0.");
-        }
->>>>>>> d911cb28566bcca1a12e8648d0ed62a524c20651
 
         return cuentaMapper.getCuentaResponseofCuenta(
                 cuentaRepository.save(cuentaMapper.getCuentaofCuentaRequest(cuentaRequest)));
@@ -56,13 +50,7 @@ public class CuentaServiceImp implements CuentaService {
         Cuenta cuenta = cuentaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Cuenta no encontrada con el id: " + id));
 
-<<<<<<< HEAD
         cuentaValidator.validarEliminacionCuenta(cuenta.getSaldo());
-=======
-        if (cuenta.getSaldo() > 0) {
-            throw new IllegalArgumentException("No se puede eliminar una cuenta con saldo mayor a 0.");
-        }
->>>>>>> d911cb28566bcca1a12e8648d0ed62a524c20651
 
         cuentaRepository.delete(cuenta);
         return ResponseEntity.noContent().build();
