@@ -33,8 +33,16 @@ paths:
                 $ref: '#/components/schemas/CuentaResponse'
         '400':
           description: Solicitud inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '500':
           description: Internal Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
     get:
       tags:
         - cuentas
@@ -77,45 +85,13 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  timestamp:
-                    type: string
-                    format: date-time
-                  status:
-                    type: integer
-                    example: 400
-                  error:
-                    type: string
-                    example: "Bad Request"
-                  message:
-                    type: string
-                    example: "Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"sdfsdfd\""
-                  path:
-                    type: string
-                    example: "/clientes/sdfsdfd"
+                $ref: '#/components/schemas/ApiError'
         '500':
           description: Cliente no encontrado
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  timestamp:
-                    type: string
-                    format: date-time
-                  status:
-                    type: integer
-                    example: 404
-                  error:
-                    type: string
-                    example: "Not Found"
-                  message:
-                    type: string
-                    example: "Cliente no encontrado con id: 302124"
-                  path:
-                    type: string
-                    example: "/clientes/302124"
+                $ref: '#/components/schemas/ApiError'
     delete:
       tags:
         - cuentas
@@ -134,6 +110,10 @@ paths:
           description: Cuenta eliminada exitosamente
         '500':
           description: Cuenta no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
 
   /cuentas/{cuentaId}/depositar:
     put:
@@ -154,19 +134,17 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                monto:
-                  type: number
-                  format: double
-                  description: Monto a depositar
-              required:
-                - monto
+              $ref: '#/components/schemas/OperacionRequest'
+
       responses:
         '200':
           description: Depósito realizado exitosamente
         '500':
           description: Solicitud inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
 
   /cuentas/{cuentaId}/retirar:
     put:
@@ -187,14 +165,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                monto:
-                  type: number
-                  format: double
-                  description: Monto a retirar
-              required:
-                - monto
+              $ref: '#/components/schemas/OperacionRequest'
       responses:
         '200':
           description: Sobregiro
@@ -203,24 +174,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  timestamp:
-                    type: string
-                    format: date-time
-                  status:
-                    type: integer
-                    example: 404
-                  error:
-                    type: string
-                    example: "Internal Server Error"
-                  message:
-                    type: string
-                    example: "Las cuentas corrientes no pueden tener un sobregiro mayor a -500."
-                  path:
-                    type: string
-                    example: "/clientes/302124"
-
+                $ref: '#/components/schemas/ApiError'
 
 
 components:
@@ -264,3 +218,32 @@ components:
         clienteId:
           type: string
           description: El ID del cliente propietario de la cuenta
+
+    ApiError:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+          example: 500
+        error:
+          type: string
+          example: "Internal Server Error"
+        message:
+          type: string
+          example: "For input string: \"asdadasd\""
+        path:
+          type: string
+          example: "/cuentas"
+
+    OperacionRequest:
+      type: object
+      properties:
+        monto:
+          type: number
+          format: double
+          description: Monto a retirar
+      required:
+        - monto

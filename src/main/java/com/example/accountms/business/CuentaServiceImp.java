@@ -15,30 +15,31 @@ import java.util.stream.Collectors;
 @Service
 public class CuentaServiceImp implements CuentaService {
 
-    @Autowired
-    private CuentaRepository cuentaRepository;
-
-    @Autowired
-    private CuentaMapper cuentaMapper;
-
-    @Autowired
-    private RestTemplate restTemplate;
+    private final  CuentaRepository cuentaRepository;
+    private final  CuentaMapper cuentaMapper;
+    private final  RestTemplate restTemplate;
+    private final  CuentaValidator cuentaValidator;
 
     private static final String Customer_WS = "http://localhost:8080/clientes/{clienteId}";
+
+    @Autowired
+    public CuentaServiceImp(CuentaRepository cuentaRepository, CuentaMapper cuentaMapper,
+                            CuentaValidator cuentaValidator, RestTemplate restTemplate) {
+        this.cuentaRepository = cuentaRepository;
+        this.cuentaMapper = cuentaMapper;
+        this.cuentaValidator = cuentaValidator;
+        this.restTemplate = restTemplate;
+    }
+
 
 
 
     @Override
     public CuentaResponse agregarCuenta(CuentaRequest cuentaRequest) {
-        // Validar que el cliente exista
         validarClienteExiste(cuentaRequest.getClienteId());
 
-        // Validar que el saldo inicial no sea 0
-        if (cuentaRequest.getSaldo() == 0) {
-            throw new IllegalArgumentException("El saldo inicial no puede ser 0.");
-        }
+        cuentaValidator.validarSaldoInicial(cuentaRequest.getSaldo());
 
-        // Guardar la cuenta si todas las validaciones son correctas
         return cuentaMapper.getCuentaResponseofCuenta(
                 cuentaRepository.save(cuentaMapper.getCuentaofCuentaRequest(cuentaRequest)));
     }
@@ -49,12 +50,8 @@ public class CuentaServiceImp implements CuentaService {
         Cuenta cuenta = cuentaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Cuenta no encontrada con el id: " + id));
 
-        // Verificar si la cuenta tiene saldo mayor a 0
-        if (cuenta.getSaldo() > 0) {
-            throw new IllegalArgumentException("No se puede eliminar una cuenta con saldo mayor a 0.");
-        }
+        cuentaValidator.validarEliminacionCuenta(cuenta.getSaldo());
 
-        // Eliminar la cuenta si no tiene saldo
         cuentaRepository.delete(cuenta);
         return ResponseEntity.noContent().build();
     }
@@ -74,37 +71,28 @@ public class CuentaServiceImp implements CuentaService {
     }
 
     @Override
-    public ResponseEntity<Void> realizarDepositoCuenta(String cuentaId, InlineObject inlineObject) {
+    public void realizarDepositoCuenta(String cuentaId, OperacionRequest inlineObject) {
         cuentaRepository.findById(cuentaId).ifPresentOrElse(cuenta -> {
             cuenta.setSaldo(cuenta.getSaldo() + inlineObject.getMonto());
             cuentaRepository.save(cuenta);
         }, () -> {
+
             throw new IllegalArgumentException("Cuenta no encontrada con el id: " + cuentaId);
         });
-
-        return ResponseEntity.ok().build();
     }
 
     @Override
-    public ResponseEntity<Void> realizarRetiroCuenta(String cuentaId, InlineObject1 inlineObject1) {
+    public void realizarRetiroCuenta(String cuentaId, OperacionRequest inlineObject1) {
         cuentaRepository.findById(cuentaId).ifPresentOrElse(cuenta -> {
+            cuentaValidator.validarRetiroCuenta(cuenta, inlineObject1.getMonto());
+
             double nuevoSaldo = cuenta.getSaldo() - inlineObject1.getMonto();
-
-            if (cuenta.getTipoCuenta() == TipoCuenta.AHORROS && nuevoSaldo < 0) {
-                throw new IllegalArgumentException("No se puede realizar un retiro que deje el saldo en negativo para cuentas de ahorro.");
-            } else if (cuenta.getTipoCuenta() == TipoCuenta.CORRIENTE && nuevoSaldo < -500) {
-                throw new IllegalArgumentException("Las cuentas corrientes no pueden tener un sobregiro mayor a -500.");
-            }
-
             cuenta.setSaldo(nuevoSaldo);
             cuentaRepository.save(cuenta);
         }, () -> {
             throw new IllegalArgumentException("Cuenta no encontrada con el id: " + cuentaId);
         });
-
-        return ResponseEntity.ok().build();
     }
-
     private void validarClienteExiste(String clienteId) {
         try {
             Long id = Long.valueOf(clienteId);

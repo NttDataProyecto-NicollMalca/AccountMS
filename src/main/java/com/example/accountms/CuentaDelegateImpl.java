@@ -4,11 +4,12 @@ import com.example.accountms.api.CuentasApiDelegate;
 import com.example.accountms.business.CuentaService;
 import com.example.accountms.model.CuentaRequest;
 import com.example.accountms.model.CuentaResponse;
-import com.example.accountms.model.InlineObject;
-import com.example.accountms.model.InlineObject1;
+import com.example.accountms.model.OperacionRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -41,14 +42,18 @@ public class CuentaDelegateImpl implements CuentasApiDelegate{
     }
 
     @Override
-    public ResponseEntity<Void> realizarDepositoCuenta(String cuentaId, InlineObject inlineObject) {
+    public ResponseEntity<Void> realizarDepositoCuenta(String cuentaId, OperacionRequest inlineObject) {
         cuentaService.realizarDepositoCuenta(cuentaId,inlineObject);
         return ResponseEntity.noContent().build();
     }
 
     @Override
-    public ResponseEntity<Void> realizarRetiroCuenta(String cuentaId, InlineObject1 inlineObject1) {
-        cuentaService.realizarRetiroCuenta(cuentaId,inlineObject1);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> realizarRetiroCuenta(String cuentaId, OperacionRequest inlineObject1) {
+        try {
+            cuentaService.realizarRetiroCuenta(cuentaId, inlineObject1);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
 }

@@ -12,13 +12,26 @@ import java.util.stream.IntStream;
 @Component
 public class CuentaMapper {
 
+
+    private static CuentaMapper instance;
+
+    private CuentaMapper() {
+    }
+
+    public static CuentaMapper getInstance() {
+        if (instance == null) {
+            instance = new CuentaMapper();
+        }
+        return instance;
+    }
+
+
     private String generateNumeroCuenta() {
         Random random = new Random();
         StringBuilder numeroCuenta = new StringBuilder();
 
-        // Generar un número de cuenta de 12 dígitos
         for (int i = 0; i < 12; i++) {
-            int digito = random.nextInt(10); // Generar un dígito aleatorio (0-9)
+            int digito = random.nextInt(10);
             numeroCuenta.append(digito);
         }
 
@@ -48,11 +61,10 @@ public class CuentaMapper {
         response.setNumeroCuenta(cuenta.getNumeroCuenta());
         response.setClienteId(cuenta.getClienteId());
         response.setSaldo(cuenta.getSaldo());
-        response.setTipoCuenta(mapToTipoCuentaEnum(cuenta.getTipoCuenta()));  // Usar mapper para el enum
+        response.setTipoCuenta(mapToTipoCuentaEnum(cuenta.getTipoCuenta()));
         return response;
     }
 
-    // Mapper para convertir de TipoCuentaEnum (CuentaRequest) a TipoCuenta (Cuenta)
     private TipoCuenta mapToTipoCuenta(CuentaRequest.TipoCuentaEnum tipoCuentaEnum) {
         switch (tipoCuentaEnum) {
             case AHORROS:
@@ -64,7 +76,6 @@ public class CuentaMapper {
         }
     }
 
-    // Mapper para convertir de TipoCuenta (Cuenta) a TipoCuentaEnum (CuentaResponse)
     private CuentaResponse.TipoCuentaEnum mapToTipoCuentaEnum(TipoCuenta tipoCuenta) {
         switch (tipoCuenta) {
             case AHORROS:

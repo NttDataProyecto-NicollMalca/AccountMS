@@ -3,8 +3,8 @@ package com.example.accountms.business;
 import com.example.accountms.api.CuentasApiDelegate;
 import com.example.accountms.model.CuentaRequest;
 import com.example.accountms.model.CuentaResponse;
-import com.example.accountms.model.InlineObject;
-import com.example.accountms.model.InlineObject1;
+
+import com.example.accountms.model.OperacionRequest;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
@@ -19,8 +19,8 @@ public interface CuentaService {
 
     public List<CuentaResponse> listarCuentas();
 
-    public ResponseEntity<Void> realizarDepositoCuenta(String cuentaId, InlineObject inlineObject);
+    public void realizarDepositoCuenta(String cuentaId, OperacionRequest inlineObject);
 
-    public ResponseEntity<Void> realizarRetiroCuenta(String cuentaId, InlineObject1 inlineObject1);
+    public void realizarRetiroCuenta(String cuentaId, OperacionRequest inlineObject1);
 
 }
