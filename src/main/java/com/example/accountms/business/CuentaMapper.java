@@ -31,7 +31,11 @@ public class CuentaMapper {
         StringBuilder numeroCuenta = new StringBuilder();
 
         for (int i = 0; i < 12; i++) {
+<<<<<<< HEAD
             int digito = random.nextInt(10);
+=======
+            int digito = random.nextInt(10); 
+>>>>>>> d911cb28566bcca1a12e8648d0ed62a524c20651
             numeroCuenta.append(digito);
         }
 
@@ -61,7 +65,11 @@ public class CuentaMapper {
         response.setNumeroCuenta(cuenta.getNumeroCuenta());
         response.setClienteId(cuenta.getClienteId());
         response.setSaldo(cuenta.getSaldo());
+<<<<<<< HEAD
         response.setTipoCuenta(mapToTipoCuentaEnum(cuenta.getTipoCuenta()));
+=======
+        response.setTipoCuenta(mapToTipoCuentaEnum(cuenta.getTipoCuenta())); 
+>>>>>>> d911cb28566bcca1a12e8648d0ed62a524c20651
         return response;
     }
 
